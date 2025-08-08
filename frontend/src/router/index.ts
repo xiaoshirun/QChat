@@ -1,25 +1,56 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../views/Home.vue'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
-// 定义路由类型：使用 RouteRecordRaw 约束路由配置
+// 定义路由元信息类型
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    title?: string
+  }
+}
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: () => import('@/views/HomeView.vue'),
+    meta: {
+      title: 'Home Page'
+    }
   },
   {
     path: '/about',
     name: 'About',
-    // 懒加载组件并指定类型
-    component: () => import('../views/About.vue')
-  }
+    component: () => import('@/views/AboutView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'About Us'
+    }
+  },
+
 ]
 
-// 创建路由实例，自动推断类型
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL), // Vite 中使用 import.meta.env 替代 process.env
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
+
+// 全局前置守卫
+// router.beforeEach((to, from, next) => {
+//   // 设置页面标题
+//   if (to.meta.title) {
+//     document.title = `${to.meta.title} | My App`
+//   }
+//
+//   // 检查是否需要认证
+//   if (to.meta.requiresAuth) {
+//     const isAuthenticated = localStorage.getItem('token')
+//     if (!isAuthenticated) {
+//       next({ name: 'Login', query: { redirect: to.fullPath } })
+//       return
+//     }
+//   }
+//
+//   next()
+// })
 
 export default router
